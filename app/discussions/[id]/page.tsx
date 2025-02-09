@@ -166,7 +166,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
                       )}
                     </div>
                     <div
-                      className="mt-2 break-words"
+                      className="mt-2 break-words [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
                       dangerouslySetInnerHTML={{
                         __html: post.attributes.contentHtml,
                       }}
