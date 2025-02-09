@@ -104,7 +104,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
   return (
     <div className="w-full h-full min-h-full">
       <div className="p-4 bg-gray-100 border-b flex flex-col">
-        <span className="text-5xl font-bold">Conversation</span>
+        <span className="text-4xl font-bold">Conversation</span>
         <span className="text-lg ml-2">
           {posts?.length} Comment{posts?.length === 1 ? "" : "s"}
         </span>
