@@ -144,34 +144,36 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
               className="mb-2 w-full border-none shadow-none bg-transparent"
             >
               <CardContent className="p-4">
-                <div className="flex space-x-4">
-                  <Avatar>
-                    {user?.attributes?.avatarUrl ? (
-                      <AvatarImage
-                        src={user?.attributes?.avatarUrl}
-                        alt={avatarAlt}
-                      />
-                    ) : (
-                      <AvatarFallback>{fallbackInitial}</AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <div className="text-sm font-bold">
-                      {user?.attributes?.username || "Unknown User"}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {format(
-                        new Date(post.attributes.createdAt),
-                        "MMM dd, yyyy hh:mm a",
+                <div className="flex flex-col">
+                  <div className="flex items-center space-x-4">
+                    <Avatar>
+                      {user?.attributes?.avatarUrl ? (
+                        <AvatarImage
+                          src={user?.attributes?.avatarUrl}
+                          alt={avatarAlt}
+                        />
+                      ) : (
+                        <AvatarFallback>{fallbackInitial}</AvatarFallback>
                       )}
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-bold">
+                        {user?.attributes?.username || "Unknown User"}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {format(
+                          new Date(post.attributes.createdAt),
+                          "MMM dd, yyyy hh:mm a",
+                        )}
+                      </div>
                     </div>
-                    <div
-                      className="mt-2 break-words [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
-                      dangerouslySetInnerHTML={{
-                        __html: post.attributes.contentHtml,
-                      }}
-                    />
                   </div>
+                  <div
+                    className="mt-2 max-w-full break-words [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
+                    dangerouslySetInnerHTML={{
+                      __html: post.attributes.contentHtml,
+                    }}
+                  />
                 </div>
               </CardContent>
             </Card>
