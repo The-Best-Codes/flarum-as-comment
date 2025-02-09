@@ -110,6 +110,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
     <main className="w-full min-h-screen">
       <Link
         className="p-4 bg-gray-100 border-b flex flex-col md:flex-row md:items-center md:justify-between"
+        target="_blank"
         href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
       >
         <div>
@@ -125,6 +126,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
         >
           <Link
             href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
+            target="_blank"
           >
             Login to Comment
           </Link>
