@@ -2,113 +2,21 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  ApiResponse,
+  DiscussionPageProps,
+  Post,
+  User,
+} from "@/types/discussion";
 import { format } from "date-fns";
 import { Loader2, MessageCircle, XCircle } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 
-interface Post {
-  type: string;
-  id: string;
-  attributes: {
-    number: number;
-    createdAt: string;
-    contentType: string;
-    contentHtml: string;
-    renderFailed: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
-    canHide: boolean;
-    mentionedByCount: number;
-    canFlag: boolean;
-    isApproved: boolean;
-    canApprove: boolean;
-    canLike: boolean;
-    likesCount: number;
-  };
-  relationships: {
-    discussion: {
-      data: {
-        type: string;
-        id: string;
-      };
-    };
-    user: {
-      data: {
-        type: string;
-        id: string;
-      };
-    };
-    mentionedBy: {
-      data: [];
-    };
-    likes: {
-      data: [];
-    };
-  };
-}
-
-interface User {
-  type: string;
-  id: string;
-  attributes: {
-    username: string;
-    avatarUrl: string;
-  };
-}
-
-interface ApiResponse {
-  data: {
-    type: string;
-    id: string;
-    attributes: {
-      title: string;
-      slug: string;
-      commentCount: number;
-      participantCount: number;
-      createdAt: string;
-      lastPostedAt: string;
-      lastPostNumber: number;
-      canReply: boolean;
-      canRename: boolean;
-      canDelete: boolean;
-      canHide: boolean;
-      isApproved: boolean;
-      canTag: boolean;
-      subscription: string | null;
-      isSticky: boolean;
-      canSticky: boolean;
-      isLocked: boolean;
-      canLock: boolean;
-    };
-    relationships: {
-      user: {
-        data: {
-          type: string;
-          id: string;
-        };
-      };
-      posts: {
-        data: {
-          type: string;
-          id: string;
-        }[];
-      };
-      tags: {
-        data: {
-          type: string;
-          id: string;
-        }[];
-      };
-    };
-  };
-  included?: (User | Post)[];
-}
-
-interface DiscussionPageProps {
+const DiscussionPage: React.FC<DiscussionPageProps> = ({
+  params,
+}: {
   params: { id: string };
-}
-
-const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
+}) => {
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [discussion, setDiscussion] = useState<ApiResponse["data"] | null>(
     null,
@@ -116,6 +24,8 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<User[] | null>(null);
+  const unwrappedParams: { id: string } = use(params as any);
+  const idParam = unwrappedParams.id;
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -123,7 +33,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
       setError(null);
 
       try {
-        const response = await fetch(`/api/d?id=${params.id}`);
+        const response = await fetch(`/api/d?id=${idParam}`);
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error("Forum post does not exist.");
@@ -154,7 +64,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
     };
 
     fetchPosts();
-  }, [params.id]);
+  }, [idParam]);
 
   const findUserById = (userId: string): User | undefined => {
     return users?.find((user) => user.id === userId);
@@ -195,10 +105,11 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
     <div className="w-full h-full min-h-full">
       <div className="p-4 bg-gray-100 border-b">
         <span className="font-bold text-lg">
-          {discussion?.attributes.commentCount} Comments
+          {discussion?.attributes.commentCount} Comment
+          {discussion?.attributes.commentCount === 1 ? "" : "s"}
         </span>
       </div>
-      <div className="overflow-y-auto h-[calc(100%-60px)]">
+      <div className="overflow-y-auto h-full">
         {posts.map((post) => {
           const user = findUserById(post.relationships.user.data.id);
 
