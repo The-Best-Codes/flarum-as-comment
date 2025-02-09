@@ -181,3 +181,22 @@
         cursor: pointer;
     }
 }
+
+/* Scrollbar Styling */
+body::-webkit-scrollbar {
+    width: 24px; /* Even bigger width */
+}
+
+body::-webkit-scrollbar-track {
+    background: #f0f0f0; /* Light gray track for contrast */
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #808080; /* Medium gray thumb */
+    border-radius: 12px; /* More rounded corners */
+    border: 6px solid #f0f0f0; /* Bigger gap */
+}
+
+body::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Darker gray on hover */
+}
