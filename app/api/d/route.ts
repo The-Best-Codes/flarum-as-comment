@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force_dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const searchParams = request.nextUrl.searchParams;
@@ -37,13 +37,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const data = await response.json();
-
-    // Extract posts from the included array
-    const posts =
-      data.included?.filter((item: any) => item.type === "posts") || [];
-
-    return NextResponse.json(posts);
+    // Return the raw response from the Flarum API
+    return NextResponse.json(await response.json());
   } catch (error: any) {
     console.error("Error fetching data from Flarum API:", error);
     return NextResponse.json(

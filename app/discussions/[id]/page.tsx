@@ -57,8 +57,51 @@ interface User {
 }
 
 interface ApiResponse {
-  data: Post[];
-  included?: User[];
+  data: {
+    type: string;
+    id: string;
+    attributes: {
+      title: string;
+      slug: string;
+      commentCount: number;
+      participantCount: number;
+      createdAt: string;
+      lastPostedAt: string;
+      lastPostNumber: number;
+      canReply: boolean;
+      canRename: boolean;
+      canDelete: boolean;
+      canHide: boolean;
+      isApproved: boolean;
+      canTag: boolean;
+      subscription: string | null;
+      isSticky: boolean;
+      canSticky: boolean;
+      isLocked: boolean;
+      canLock: boolean;
+    };
+    relationships: {
+      user: {
+        data: {
+          type: string;
+          id: string;
+        };
+      };
+      posts: {
+        data: {
+          type: string;
+          id: string;
+        }[];
+      };
+      tags: {
+        data: {
+          type: string;
+          id: string;
+        }[];
+      };
+    };
+  };
+  included?: (User | Post)[];
 }
 
 interface DiscussionPageProps {
@@ -67,6 +110,9 @@ interface DiscussionPageProps {
 
 const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
   const [posts, setPosts] = useState<Post[] | null>(null);
+  const [discussion, setDiscussion] = useState<ApiResponse["data"] | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<User[] | null>(null);
@@ -86,8 +132,19 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
           }
         }
         const data: ApiResponse = await response.json();
-        setPosts(data.data);
-        setUsers(data.included ?? null);
+        setDiscussion(data.data);
+
+        // Extract posts from included data
+        const postData = data.included?.filter(
+          (item): item is Post => item.type === "posts",
+        );
+        setPosts(postData || null);
+
+        // Extract users from included data
+        const userData = data.included?.filter(
+          (item): item is User => item.type === "users",
+        );
+        setUsers(userData || null);
       } catch (e: any) {
         console.error("Failed to fetch posts:", e);
         setError(e.message || "Failed to load comments.");
@@ -101,6 +158,10 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
 
   const findUserById = (userId: string): User | undefined => {
     return users?.find((user) => user.id === userId);
+  };
+
+  const getFirstPost = (): Post | undefined => {
+    return posts ? posts[0] : undefined;
   };
 
   if (loading) {
@@ -133,7 +194,9 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
   return (
     <div className="w-full h-full min-h-full">
       <div className="p-4 bg-gray-100 border-b">
-        <span className="font-bold text-lg">{posts.length} Comments</span>
+        <span className="font-bold text-lg">
+          {discussion?.attributes.commentCount} Comments
+        </span>
       </div>
       <div className="overflow-y-auto h-[calc(100%-60px)]">
         {posts.map((post) => {
@@ -147,20 +210,21 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
               <CardContent className="p-4">
                 <div className="flex space-x-4">
                   <Avatar>
-                    {user?.attributes.avatarUrl ? (
+                    {user?.attributes?.avatarUrl ? (
                       <AvatarImage
-                        src={user?.attributes.avatarUrl}
-                        alt={user?.attributes.username}
+                        src={user?.attributes?.avatarUrl}
+                        alt={user?.attributes?.username}
                       />
                     ) : (
                       <AvatarFallback>
-                        {user?.attributes.username.charAt(0).toUpperCase()}
+                        {user?.attributes?.username?.charAt(0).toUpperCase() ||
+                          "?"}
                       </AvatarFallback>
                     )}
                   </Avatar>
                   <div>
                     <div className="text-sm font-bold">
-                      {user?.attributes.username}
+                      {user?.attributes?.username || "Unknown User"}
                     </div>
                     <div className="text-xs text-gray-500">
                       {format(
