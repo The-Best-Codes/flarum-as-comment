@@ -1,0 +1,188 @@
+"use client";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
+import { Loader2, MessageCircle, XCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+interface Post {
+  type: string;
+  id: string;
+  attributes: {
+    number: number;
+    createdAt: string;
+    contentType: string;
+    contentHtml: string;
+    renderFailed: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    canHide: boolean;
+    mentionedByCount: number;
+    canFlag: boolean;
+    isApproved: boolean;
+    canApprove: boolean;
+    canLike: boolean;
+    likesCount: number;
+  };
+  relationships: {
+    discussion: {
+      data: {
+        type: string;
+        id: string;
+      };
+    };
+    user: {
+      data: {
+        type: string;
+        id: string;
+      };
+    };
+    mentionedBy: {
+      data: [];
+    };
+    likes: {
+      data: [];
+    };
+  };
+}
+
+interface User {
+  type: string;
+  id: string;
+  attributes: {
+    username: string;
+    avatarUrl: string;
+  };
+}
+
+interface ApiResponse {
+  data: Post[];
+  included?: User[];
+}
+
+interface DiscussionPageProps {
+  params: { id: string };
+}
+
+const DiscussionPage: React.FC<DiscussionPageProps> = ({ params }) => {
+  const [posts, setPosts] = useState<Post[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[] | null>(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/d?id=${params.id}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Forum post does not exist.");
+          } else {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+        }
+        const data: ApiResponse = await response.json();
+        setPosts(data.data);
+        setUsers(data.included ?? null);
+      } catch (e: any) {
+        console.error("Failed to fetch posts:", e);
+        setError(e.message || "Failed to load comments.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [params.id]);
+
+  const findUserById = (userId: string): User | undefined => {
+    return users?.find((user) => user.id === userId);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <Loader2 className="h-8 w-8 animate-spin mb-2 text-blue-500" />
+        <p className="text-sm text-gray-600">Fetching comments...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <XCircle className="h-8 w-8 mb-2 text-red-500" />
+        <p className="text-sm text-red-600">{error}</p>
+      </div>
+    );
+  }
+
+  if (!posts || posts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <MessageCircle className="h-8 w-8 mb-2 text-gray-500" />
+        <p className="text-sm text-gray-600">Be the first to comment!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-full min-h-full">
+      <div className="p-4 bg-gray-100 border-b">
+        <span className="font-bold text-lg">{posts.length} Comments</span>
+      </div>
+      <div className="overflow-y-auto h-[calc(100%-60px)]">
+        {posts.map((post) => {
+          const user = findUserById(post.relationships.user.data.id);
+
+          return (
+            <Card
+              key={post.id}
+              className="mb-2 w-full border-none shadow-none bg-transparent"
+            >
+              <CardContent className="p-4">
+                <div className="flex space-x-4">
+                  <Avatar>
+                    {user?.attributes.avatarUrl ? (
+                      <AvatarImage
+                        src={user?.attributes.avatarUrl}
+                        alt={user?.attributes.username}
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        {user?.attributes.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div>
+                    <div className="text-sm font-bold">
+                      {user?.attributes.username}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {format(
+                        new Date(post.attributes.createdAt),
+                        "MMM dd, yyyy hh:mm a",
+                      )}
+                    </div>
+                    <div
+                      className="mt-2 break-words"
+                      dangerouslySetInnerHTML={{
+                        __html: post.attributes.contentHtml,
+                      }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default DiscussionPage;
