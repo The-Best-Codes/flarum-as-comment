@@ -112,6 +112,13 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
         {posts.map((post) => {
           const user = findUserById(post.relationships.user.data.id);
 
+          const username = user?.attributes?.username || "";
+          const avatarAlt = username.trim() || "?";
+
+          const fallbackInitial = username.trim()
+            ? username.trim().charAt(0).toUpperCase()
+            : "?";
+
           return (
             <Card
               key={post.id}
@@ -123,13 +130,10 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
                     {user?.attributes?.avatarUrl ? (
                       <AvatarImage
                         src={user?.attributes?.avatarUrl}
-                        alt={user?.attributes?.username}
+                        alt={avatarAlt}
                       />
                     ) : (
-                      <AvatarFallback>
-                        {user?.attributes?.username?.charAt(0).toUpperCase() ||
-                          "?"}
-                      </AvatarFallback>
+                      <AvatarFallback>{fallbackInitial}</AvatarFallback>
                     )}
                   </Avatar>
                   <div>
