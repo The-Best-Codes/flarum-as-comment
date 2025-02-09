@@ -10,6 +10,7 @@ import {
 } from "@/types/discussion";
 import { format } from "date-fns";
 import { Loader2, MessageCircle, XCircle } from "lucide-react";
+import Link from "next/link";
 import React, { use, useEffect, useState } from "react";
 
 const DiscussionPage: React.FC<DiscussionPageProps> = ({
@@ -78,7 +79,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
     return (
       <div className="flex flex-col items-center justify-center h-full w-full">
         <Loader2 className="h-8 w-8 animate-spin mb-2 text-blue-500" />
-        <p className="text-sm text-gray-600">Fetching comments...</p>
+        <p className="text-sm text-gray-600">Loading comments...</p>
       </div>
     );
   }
@@ -103,12 +104,15 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
 
   return (
     <div className="w-full h-full min-h-full">
-      <div className="p-4 bg-gray-100 border-b flex flex-col">
+      <Link
+        className="p-4 bg-gray-100 border-b flex flex-col"
+        href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
+      >
         <span className="text-4xl font-bold">Conversation</span>
         <span className="text-lg ml-2">
           {posts?.length} Comment{posts?.length === 1 ? "" : "s"}
         </span>
-      </div>
+      </Link>
       <div className="overflow-y-auto h-full">
         {posts.map((post) => {
           const user = findUserById(post.relationships.user.data.id);
