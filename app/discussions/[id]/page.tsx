@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ApiResponse,
@@ -105,13 +106,26 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
   return (
     <div className="w-full h-full min-h-full">
       <Link
-        className="p-4 bg-gray-100 border-b flex flex-col"
+        className="p-4 bg-gray-100 border-b flex flex-col md:flex-row md:items-center md:justify-between"
         href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
       >
-        <span className="text-4xl font-bold">Conversation</span>
-        <span className="text-lg ml-2">
-          {posts?.length} Comment{posts?.length === 1 ? "" : "s"}
-        </span>
+        <div>
+          <span className="text-4xl font-bold block">Conversation</span>
+          <span className="text-lg ml-2 block">
+            {posts?.length} Comment{posts?.length === 1 ? "" : "s"}
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          asChild
+          className="mt-2 md:mt-0 w-fit bg-sky-600 hover:bg-sky-700 text-white hover:text-white border-none"
+        >
+          <Link
+            href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
+          >
+            Login to Comment
+          </Link>
+        </Button>
       </Link>
       <div className="overflow-y-auto h-full">
         {posts.map((post) => {
