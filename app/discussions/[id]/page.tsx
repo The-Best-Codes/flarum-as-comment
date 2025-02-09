@@ -78,33 +78,36 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full">
-        <Loader2 className="h-8 w-8 animate-spin mb-2 text-blue-500" />
-        <p className="text-sm text-gray-600">Loading comments...</p>
-      </div>
+      <main className="w-full min-h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-32 w-32 animate-spin mb-2 text-blue-500" />
+        <p className="text-lg text-black">Loading comments...</p>
+        <span className="text-sm text-gray-600">
+          Those big, beautiful comments...
+        </span>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full">
-        <XCircle className="h-8 w-8 mb-2 text-red-500" />
-        <p className="text-sm text-red-600">{error}</p>
-      </div>
+      <main className="w-full min-h-screen flex flex-col items-center justify-center">
+        <XCircle className="h-32 w-32 mb-2 text-red-500" />
+        <p className="text-base text-red-600">{error}</p>
+      </main>
     );
   }
 
   if (!posts || posts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full">
-        <MessageCircle className="h-8 w-8 mb-2 text-gray-500" />
-        <p className="text-sm text-gray-600">Be the first to comment!</p>
-      </div>
+      <main className="w-full min-h-screen flex flex-col items-center justify-center">
+        <MessageCircle className="h-32 w-32 mb-2 text-gray-500" />
+        <p className="text-lg text-black">Be the first to comment!</p>
+      </main>
     );
   }
 
   return (
-    <div className="w-full h-full min-h-full">
+    <main className="w-full min-h-screen">
       <Link
         className="p-4 bg-gray-100 border-b flex flex-col md:flex-row md:items-center md:justify-between"
         href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
@@ -180,7 +183,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
           );
         })}
       </div>
-    </div>
+    </main>
   );
 };
 
