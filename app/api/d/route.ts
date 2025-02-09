@@ -14,6 +14,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_FLARUM_BASE_URL;
+  const apiKey = process.env.FLARUM_API_KEY;
+  const apiUserId = process.env.FLARUM_API_USER_ID;
 
   if (!baseUrl) {
     return NextResponse.json(
@@ -22,8 +24,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "FLARUM_API_KEY is not defined" },
+      { status: 500 },
+    );
+  }
+
   try {
-    const response = await fetch(`${baseUrl}/discussions/${id}`);
+    const headers = new Headers();
+    headers.append("Authorization", `Token ${apiKey}; userId=${apiUserId}`);
+
+    const response = await fetch(`${baseUrl}/discussions/${id}`, {
+      headers: headers,
+    });
 
     if (!response.ok) {
       console.error(
