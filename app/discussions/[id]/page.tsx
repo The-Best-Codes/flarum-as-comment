@@ -105,8 +105,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
     <div className="w-full h-full min-h-full">
       <div className="p-4 bg-gray-100 border-b">
         <span className="font-bold text-lg">
-          {discussion?.attributes.commentCount} Comment
-          {discussion?.attributes.commentCount === 1 ? "" : "s"}
+          {posts?.length} Comment{posts?.length === 1 ? "" : "s"}
         </span>
       </div>
       <div className="overflow-y-auto h-full">
