@@ -1,204 +1,90 @@
-"use client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ApiResponse, Post, User } from "@/types/discussion";
+import { Suspense } from "react";
+import DiscussionPageClient from "./DiscussionPageClient";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  ApiResponse,
-  DiscussionPageProps,
-  Post,
-  User,
-} from "@/types/discussion";
-import { format } from "date-fns";
-import { Loader2, MessageCircle, XCircle } from "lucide-react";
-import Link from "next/link";
-import React, { use, useEffect, useRef, useState } from "react";
+export const dynamicParams = true;
+export const revalidate = 60;
+export const experimental_ppr = true;
 
-const DiscussionPage: React.FC<DiscussionPageProps> = ({
-  params,
-}: {
+export async function generateStaticParams() {
+  const idsToGenerate = ["9"];
+
+  return idsToGenerate.map((id) => ({
+    id: id,
+  }));
+}
+
+interface Props {
   params: { id: string };
-}) => {
-  const [posts, setPosts] = useState<Post[] | null>(null);
-  const [discussion, setDiscussion] = useState<ApiResponse["data"] | null>(
-    null,
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [users, setUsers] = useState<User[] | null>(null);
-  const unwrappedParams: { id: string } = use(params as any);
-  const idParam = unwrappedParams.id;
-  const contentRef = useRef<HTMLDivElement>(null);
+}
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      setError(null);
+async function fetchData(id: string): Promise<{
+  posts: Post[] | null;
+  discussion: ApiResponse["data"] | null;
+  users: User[] | null;
+  error: string | null;
+}> {
+  try {
+    // Construct the absolute URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-      try {
-        const response = await fetch(`/api/d?id=${idParam}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error("Forum post does not exist.");
-          } else {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-        }
-        const data: ApiResponse = await response.json();
-        setDiscussion(data.data);
+    const apiUrl = `${baseUrl}/api/d?id=${id}`; // use absolute URL
+    const response = await fetch(apiUrl);
 
-        // Extract posts from included data
-        const postData = data.included?.filter(
-          (item): item is Post => item.type === "posts",
-        );
-        setPosts(postData || null);
-
-        // Extract users from included data
-        const userData = data.included?.filter(
-          (item): item is User => item.type === "users",
-        );
-        setUsers(userData || null);
-      } catch (e: any) {
-        console.error("Failed to fetch posts:", e);
-        setError(e.message || "Failed to load comments.");
-      } finally {
-        setLoading(false);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Forum post does not exist.");
+      } else {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    };
-
-    fetchPosts();
-  }, [idParam]);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      const links = contentRef.current.querySelectorAll("a");
-      links.forEach((link) => {
-        link.setAttribute("target", "_blank");
-        link.setAttribute("rel", "noopener noreferrer"); // Best practice for security
-      });
     }
-  }, [posts]); // Re-run effect when posts are updated
+    const data: ApiResponse = await response.json();
 
-  const findUserById = (userId: string): User | undefined => {
-    return users?.find((user) => user.id === userId);
-  };
-
-  const getFirstPost = (): Post | undefined => {
-    return posts ? posts[0] : undefined;
-  };
-
-  if (loading) {
-    return (
-      <main className="w-full min-h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-32 w-32 animate-spin mb-2 text-blue-500" />
-        <p className="text-lg text-black">Loading comments...</p>
-        <span className="text-sm text-gray-600">
-          Those big, beautiful comments...
-        </span>
-      </main>
+    // Extract posts from included data
+    const postData = data.included?.filter(
+      (item): item is Post => item.type === "posts",
     );
-  }
+    const posts = postData || null;
 
-  if (error) {
-    return (
-      <main className="w-full min-h-screen flex flex-col items-center justify-center">
-        <XCircle className="h-32 w-32 mb-2 text-red-500" />
-        <p className="text-base text-red-600">{error}</p>
-      </main>
+    // Extract users from included data
+    const userData = data.included?.filter(
+      (item): item is User => item.type === "users",
     );
-  }
+    const users = userData || null;
 
-  if (!posts || posts.length === 0) {
-    return (
-      <main className="w-full min-h-screen flex flex-col items-center justify-center">
-        <MessageCircle className="h-32 w-32 mb-2 text-gray-500" />
-        <p className="text-lg text-black">Be the first to comment!</p>
-      </main>
-    );
+    return {
+      posts: posts,
+      discussion: data.data,
+      users: users,
+      error: null,
+    };
+  } catch (e: any) {
+    console.error("Failed to fetch posts:", e);
+    return {
+      posts: null,
+      discussion: null,
+      users: null,
+      error: e.message || "Failed to load comments.",
+    };
   }
+}
+
+// This is the Server Component
+export default async function DiscussionPage({ params }: Props) {
+  // We MUST await the params. Next.js 15.2 experimental requires this.
+  const id = (await params).id;
+  const { posts, discussion, users, error } = await fetchData(id);
 
   return (
-    <main className="w-full min-h-screen">
-      <Link
-        className="p-4 bg-gray-100 border-b flex flex-col md:flex-row md:items-center md:justify-between"
-        target="_blank"
-        href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
-      >
-        <div>
-          <span className="text-4xl font-bold block">Conversation</span>
-          <span className="text-lg ml-2 block">
-            {posts?.length} Comment{posts?.length === 1 ? "" : "s"}
-          </span>
-        </div>
-        <Button
-          variant="outline"
-          asChild
-          className="mt-2 md:mt-0 w-fit bg-sky-600 hover:bg-sky-700 text-white hover:text-white border-none"
-        >
-          <Link
-            href={`${process.env.NEXT_PUBLIC_FLARUM_PUBLIC_URL}/d/${idParam}`}
-            target="_blank"
-          >
-            Login to Comment
-          </Link>
-        </Button>
-      </Link>
-      <div className="overflow-y-auto h-full">
-        {posts.map((post) => {
-          const user = findUserById(post.relationships.user.data.id);
-
-          const username = user?.attributes?.username || "";
-          const avatarAlt = username.trim() || "?";
-
-          const fallbackInitial = username.trim()
-            ? username.trim().charAt(0).toUpperCase()
-            : "?";
-
-          return (
-            <Card
-              key={post.id}
-              className="w-full border-none shadow-none bg-transparent"
-            >
-              <CardContent className="p-4 pb-0">
-                <div className="flex flex-col bg-gray-100 rounded-lg p-4">
-                  <div className="flex items-center space-x-4">
-                    <Avatar>
-                      {user?.attributes?.avatarUrl ? (
-                        <AvatarImage
-                          src={user?.attributes?.avatarUrl}
-                          alt={avatarAlt}
-                        />
-                      ) : (
-                        <AvatarFallback>{fallbackInitial}</AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div>
-                      <div className="text-sm font-bold">
-                        {user?.attributes?.username || "Unknown User"}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {format(
-                          new Date(post.attributes.createdAt),
-                          "MMM dd, yyyy hh:mm a",
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="mt-2 max-w-full break-words [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
-                    ref={contentRef}
-                    dangerouslySetInnerHTML={{
-                      __html: post.attributes.contentHtml,
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </main>
+    <Suspense fallback={<Skeleton className="h-10 w-full" />}>
+      <DiscussionPageClient
+        idParam={id}
+        posts={posts}
+        discussion={discussion}
+        users={users}
+        error={error}
+      />
+    </Suspense>
   );
-};
-
-export default DiscussionPage;
+}

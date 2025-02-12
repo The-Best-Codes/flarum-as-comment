@@ -1,50 +1,70 @@
 "use client";
 
-import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import Image from "next/image";
+import React, { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
-      className,
-    )}
-    {...props}
-  />
-));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
+interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
+  src?: string;
+  alt?: string;
+  fallback?: string;
+  width?: number;
+  height?: number;
+  htmlImg?: boolean; // Use regular <img> tag instead of next/image
+}
 
-const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+const Avatar: React.FC<AvatarProps> = ({
+  src,
+  alt,
+  fallback = "?",
+  width = 40,
+  height = 40,
+  className,
+  htmlImg = false,
+  ...props
+}) => {
+  const [isError, setIsError] = useState(false);
 
-const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
-    ref={ref}
-    className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
-      className,
-    )}
-    {...props}
-  />
-));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
+  return (
+    <div
+      className={cn(
+        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+        className,
+      )}
+      {...props}
+    >
+      {src && !isError ? (
+        htmlImg ? (
+          <img
+            src={src}
+            alt={alt}
+            className="aspect-square h-full w-full object-cover"
+            onError={(error) => {
+              console.error("Image loading error:", error);
+              setIsError(true);
+            }}
+          />
+        ) : (
+          <Image
+            src={src}
+            alt={alt || ""}
+            width={width}
+            height={height}
+            className="aspect-square h-full w-full object-cover"
+            onError={(error) => {
+              console.error("Image loading error:", error);
+              setIsError(true);
+            }}
+          />
+        )
+      ) : (
+        <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-gray-700">
+          {fallback}
+        </div>
+      )}
+    </div>
+  );
+};
 
-export { Avatar, AvatarFallback, AvatarImage };
+export { Avatar };
