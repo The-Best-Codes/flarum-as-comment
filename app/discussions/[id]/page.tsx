@@ -12,7 +12,7 @@ import {
 import { format } from "date-fns";
 import { Loader2, MessageCircle, XCircle } from "lucide-react";
 import Link from "next/link";
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 
 const DiscussionPage: React.FC<DiscussionPageProps> = ({
   params,
@@ -28,6 +28,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
   const [users, setUsers] = useState<User[] | null>(null);
   const unwrappedParams: { id: string } = use(params as any);
   const idParam = unwrappedParams.id;
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -67,6 +68,16 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
 
     fetchPosts();
   }, [idParam]);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const links = contentRef.current.querySelectorAll("a");
+      links.forEach((link) => {
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noopener noreferrer"); // Best practice for security
+      });
+    }
+  }, [posts]); // Re-run effect when posts are updated
 
   const findUserById = (userId: string): User | undefined => {
     return users?.find((user) => user.id === userId);
@@ -146,9 +157,9 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
           return (
             <Card
               key={post.id}
-              className="mb-2 w-full border-none shadow-none bg-transparent"
+              className="w-full border-none shadow-none bg-transparent"
             >
-              <CardContent className="p-4">
+              <CardContent className="p-4 pb-0">
                 <div className="flex flex-col bg-gray-100 rounded-lg p-4">
                   <div className="flex items-center space-x-4">
                     <Avatar>
@@ -175,6 +186,7 @@ const DiscussionPage: React.FC<DiscussionPageProps> = ({
                   </div>
                   <div
                     className="mt-2 max-w-full break-words [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
+                    ref={contentRef}
                     dangerouslySetInnerHTML={{
                       __html: post.attributes.contentHtml,
                     }}
