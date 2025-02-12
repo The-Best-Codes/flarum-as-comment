@@ -7,8 +7,37 @@ export const dynamicParams = true;
 export const revalidate = 60;
 export const experimental_ppr = true;
 
+function parseSSGPostIds(): string[] {
+  const envValue = process.env.NEXT_PUBLIC_SSG_POST_IDS;
+
+  if (!envValue) {
+    return [];
+  }
+
+  try {
+    const parsedArray = JSON.parse(envValue);
+
+    if (!Array.isArray(parsedArray)) {
+      console.warn(
+        "NEXT_PUBLIC_SSG_POST_IDS is not a valid array. Using default empty array.",
+      );
+      return [];
+    }
+
+    // Validate that each element is a string or number that can be converted to string
+    const validatedArray = parsedArray.map(String);
+    return validatedArray;
+  } catch (error) {
+    console.error(
+      "Error parsing NEXT_PUBLIC_SSG_POST_IDS. Using default empty array.",
+      error,
+    );
+    return [];
+  }
+}
+
 export async function generateStaticParams() {
-  const idsToGenerate = ["9"];
+  const idsToGenerate = parseSSGPostIds();
 
   return idsToGenerate.map((id) => ({
     id: id,
