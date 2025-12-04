@@ -20,11 +20,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    turbo: {},
-    reactCompiler: true,
-    ppr: true,
-  },
 };
 
 export default nextConfig;
