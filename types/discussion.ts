@@ -95,7 +95,3 @@ export interface ApiResponse {
   };
   included?: (User | Post)[];
 }
-
-export interface DiscussionPageProps {
-  params: { id: string };
-}

@@ -96,7 +96,7 @@ async function fetchData(id: string): Promise<{
 
 export default async function DiscussionPage({ params }: Props) {
   const id = params.id;
-  const { posts, discussion, users, error } = await fetchData(id);
+  const { posts, users, error } = await fetchData(id);
 
   return (
     <Suspense fallback={<Skeleton className="h-10 w-full" />}>
