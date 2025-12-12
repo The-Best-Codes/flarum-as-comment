@@ -95,7 +95,8 @@ async function fetchData(id: string): Promise<{
 }
 
 export default async function DiscussionPage({ params }: Props) {
-  const id = params.id;
+  // Yes, params needs to be awaited. If you don't, the app will break.
+  const id = (await params).id;
   const { posts, users, error } = await fetchData(id);
 
   return (
