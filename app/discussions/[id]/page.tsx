@@ -5,7 +5,6 @@ import DiscussionPageClient from "./DiscussionPageClient";
 
 export const dynamicParams = true;
 export const revalidate = 60;
-export const experimental_ppr = true;
 
 function parseSSGPostIds(): string[] {
   const envValue = process.env.NEXT_PUBLIC_SSG_POST_IDS;
@@ -24,7 +23,6 @@ function parseSSGPostIds(): string[] {
       return [];
     }
 
-    // Validate that each element is a string or number that can be converted to string
     const validatedArray = parsedArray.map(String);
     return validatedArray;
   } catch (error) {
@@ -55,10 +53,9 @@ async function fetchData(id: string): Promise<{
   error: string | null;
 }> {
   try {
-    // Construct the absolute URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    const apiUrl = `${baseUrl}/api/d?id=${id}`; // use absolute URL
+    const apiUrl = `${baseUrl}/api/d?id=${id}`;
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
@@ -70,13 +67,11 @@ async function fetchData(id: string): Promise<{
     }
     const data: ApiResponse = await response.json();
 
-    // Extract posts from included data
     const postData = data.included?.filter(
       (item): item is Post => item.type === "posts",
     );
     const posts = postData || null;
 
-    // Extract users from included data
     const userData = data.included?.filter(
       (item): item is User => item.type === "users",
     );
@@ -99,10 +94,8 @@ async function fetchData(id: string): Promise<{
   }
 }
 
-// This is the Server Component
 export default async function DiscussionPage({ params }: Props) {
-  // We MUST await the params. Next.js 15.2 experimental requires this.
-  const id = (await params).id;
+  const id = params.id;
   const { posts, discussion, users, error } = await fetchData(id);
 
   return (
@@ -110,7 +103,6 @@ export default async function DiscussionPage({ params }: Props) {
       <DiscussionPageClient
         idParam={id}
         posts={posts}
-        discussion={discussion}
         users={users}
         error={error}
       />

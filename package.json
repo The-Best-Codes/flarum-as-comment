@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "PORT=4826 next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pull-updates": "git pull && npm install"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

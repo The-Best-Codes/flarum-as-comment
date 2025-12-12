@@ -12,7 +12,6 @@ import React, { useEffect, useRef, useState } from "react";
 interface DiscussionPageClientProps {
   idParam: string;
   posts: Post[] | null;
-  discussion: ApiResponse["data"] | null;
   users: User[] | null;
   error: string | null;
 }
@@ -20,11 +19,9 @@ interface DiscussionPageClientProps {
 const DiscussionPageClient: React.FC<DiscussionPageClientProps> = ({
   idParam,
   posts,
-  discussion,
   users,
   error,
 }) => {
-  const [loading, setLoading] = useState(false); // Loading is now client-side only
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,7 +86,6 @@ const DiscussionPageClient: React.FC<DiscussionPageClientProps> = ({
           const user = findUserById(post.relationships.user.data.id);
 
           const username = user?.attributes?.username || "";
-          const avatarAlt = username.trim() || "?";
 
           const fallbackInitial = username.trim()
             ? username.trim().charAt(0).toUpperCase()
@@ -121,7 +117,7 @@ const DiscussionPageClient: React.FC<DiscussionPageClientProps> = ({
                     </div>
                   </div>
                   <div
-                    className="mt-2 max-w-full break-words [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
+                    className="mt-2 max-w-full wrap-break-word [&_a]:text-sky-600 [&_a]:hover:text-sky-700"
                     ref={contentRef}
                     dangerouslySetInnerHTML={{
                       __html: post.attributes.contentHtml,
